@@ -2,75 +2,63 @@ from pathlib import Path
 import json
 from bs4 import BeautifulSoup
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 from nltk import stem
 
-
-tokenFrequency = defaultdict(dict)
-urlIDMap = {}
-reverseUrlIDMap = {}
-stemmer = stem.PorterStemmer()
-
-storeIndex = {
-    "tokens": tokenFrequency,
-    "map": urlIDMap,
-    # More efficient for checking if url's been mapped but uses more memory to store extra dict
-    "reverseMap": reverseUrlIDMap
-}
-
+STEMMER = stem.PorterStemmer()
 
 class Posting:
-    def __init__(self, docid: int, tokens: list, url: str):
+    def __init__(self, docid, tfidf):
         self.docid = docid
-        self.tokens = tokens
-        self.url = url
-        self.tfidf = defaultdict(int)  # use freq counts for now
+        self.tfidf = tfidf # frequency counts for now
 
-    def mapID(self):
-        if reverseUrlIDMap.get(self.url) is None:
-            urlIDMap[self.docid] = self.url
-            reverseUrlIDMap[self.url] = self.docid
-            return True
-        return False
+class BuildIndex:
+    def __init__(self, path) -> None:
+        self.webPagesPath = path
+        self.urlIDMap = {} # key - doc URL, value - document ID
+        self.IDUrlMap = {} # key - document ID, value - doc URL
+        self.invertedIndex = {} # key - words, values - List of postings (Actual Indexer, in-memory)
+    
+    def buildIndex(self):
+        docNumber = 0 # Initial document number
+        path = Path(self.webPagesPath) # one folder while testing
+        for file in path.iterdir():
+            with open(file) as readFile:
+                jsonObj = json.load(readFile)
+                
+                url = jsonObj["url"]  # might need to defrag again, unsure as it wasn't specified
+                if url in self.urlIDMap:  continue
+                self.urlIDMap[url] = docNumber
+                self.IDUrlMap[docNumber] = url
+                
+                rawContent = jsonObj["content"]
+                content = BeautifulSoup(rawContent, features="html.parser")
+                
+                content = content.find_all('body')
+                for line in content:
+                    tokens = [STEMMER.stem(word) if "'" not in word else STEMMER.stem(word.replace("'", ''))
+                            for word in re.sub(r"[^a-zA-Z0-9']", " ", line.text.lower()).split()]
+                    token_frequency = Counter(tokens)
+                    for token in tokens:
+                        if token not in self.invertedIndex:
+                            self.invertedIndex[token] = list()
+                        self.invertedIndex[token].append(Posting(docNumber, token_frequency[token]))
+            docNumber += 1
+    
+    def writeDate(self):
+        with open("urlIDMap.txt", 'w') as data:
+            jsonObj = json.dumps(self.urlIDMap)
+            data.write(jsonObj)
+        with open("IDUrlMap.txt", 'w') as data:
+            jsonObj = json.dumps(self.IDUrlMap)
+            data.write(jsonObj)
+        with open("indexes.txt", 'w'): # can't write Posting objects to python file. Have to figure out a way
+            print(self.invertedIndex)
+            #jsonObj = json.dumps(self.invertedIndex)
+            #data.write(jsonObj)
+    
 
-    def tokenFreqs(self):
-        for token in self.tokens:
-            self.tfidf[token] += 1
-        for k, v in self.tfidf.items():
-            tokenFrequency[k][self.docid] = v
-
-
-def main():
-    docid = 0
-    # path = Path("C:/SearchEngine/developer/DEV/")
-    # for dir in path.iterdir():
-    #     for file in dir.iterdir():
-    #         pass
-    path = Path("C:/SearchEngine/developer/DEV/www_stat_uci_edu") # one folder while testing
-    for file in path.iterdir():
-        with open(file) as readFile:
-            jsonObj = json.load(readFile)
-            url = jsonObj["url"]  # might need to defrag again, unsure as it wasn't specified
-            rawContent = jsonObj["content"]
-            content = BeautifulSoup(rawContent, features="html.parser")
-            content = content.find_all('body')
-            for line in content:
-                tokens = [stemmer.stem(word) if "'" not in word else stemmer.stem(word.replace("'", ''))
-                          for word in re.sub(r"[^a-zA-Z0-9']", " ", line.text.lower()).split()]
-                page = Posting(docid, tokens, url)
-                if page.mapID():
-                    docid += 1
-                    page.tokenFreqs()
-    print(urlIDMap, reverseUrlIDMap)
-    print()
-    print(tokenFrequency)
-
-
-with open("data.txt", 'w') as data:
-    jsonObj = json.dumps(storeIndex)
-    data.write(jsonObj)
-
-
-
-# html find_all
-main()
+if __name__ == "__main__":
+    indexer = BuildIndex("DEV/www_stat_uci_edu")
+    indexer.buildIndex()
+    indexer.writeDate()
