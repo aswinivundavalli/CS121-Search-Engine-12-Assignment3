@@ -117,8 +117,8 @@ class BuildIndex:
                     merged_result["indices"][file1_tokens[p1]] = data_1["indices"][file1_tokens[p1]]
                     merged_result["tokens"].append(file1_tokens[p1])
                     p1 += 1
-                elif file1_tokens[p1] < file2_tokens[p2]:
-                    merged_result["indices"][file2_tokens[p2]] = data_2["indices"][file2_tokens[p1]]
+                elif file1_tokens[p1] > file2_tokens[p2]:
+                    merged_result["indices"][file2_tokens[p2]] = data_2["indices"][file2_tokens[p2]]
                     merged_result["tokens"].append(file2_tokens[p2])
                     p2 += 1
                 else:

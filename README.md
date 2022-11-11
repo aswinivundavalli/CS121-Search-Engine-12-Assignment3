@@ -22,5 +22,4 @@ The goal of this milestone is to create an inverted index using the HTML files f
 - Partial Indexes(When in-memory runs out)
 - Serialization Error when writing index to file
 - Iterate through all directories(Start with a few directories to test core functionality before expanding)
-- Defragment URL
 - Postings need to be sorted by document id
