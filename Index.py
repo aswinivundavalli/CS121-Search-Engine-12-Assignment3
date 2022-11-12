@@ -42,7 +42,7 @@ class BuildIndex:
 
                     rawContent = jsonObj["content"]
                     content = BeautifulSoup(rawContent, features="html.parser")
-                    content = content.find_all('body')
+                    #content = content.find_all('body')
                     for line in content:
                         tokens = [STEMMER.stem(word) if "'" not in word else STEMMER.stem(word.replace("'", ''))
                                 for word in re.sub(r"[^a-zA-Z0-9']", " ", line.text.lower()).split()]
@@ -69,6 +69,7 @@ class BuildIndex:
             self.partialFileIndex += 1
 
         self.mergeFiles()
+        #print("Final document number: {}".format(docNumber))
 
     def writePartialIndexesToFile(self, fileName):
         with open(fileName, 'w') as f: 
@@ -88,7 +89,6 @@ class BuildIndex:
             data.write(jsonObj)
     
     def mergeFiles(self):
-        print(self.partialIndexFiles)
         while(len(self.partialIndexFiles) > 1):
             file1 = self.partialIndexFiles.pop(0)
             file2 = self.partialIndexFiles.pop(0)
@@ -139,7 +139,6 @@ class BuildIndex:
             os.remove(file2)
             with open(merged_file, 'w') as f: 
                 json.dump(merged_result, f)
-        print(self.partialIndexFiles)
 
 
 if __name__ == "__main__":
