@@ -9,7 +9,7 @@ import sys
 
 STEMMER = stem.PorterStemmer()
 BATCH_SIZE = 3000000  # bytes
-PATH = "C:/SearchEngine/developer/DEV/"
+PATH = "DEV/"
 PARTIALINDEXPATH = "partialIndices/partialIndex_"
 FULLINDEXPATH = "full_Index/index.jsonl"
 
