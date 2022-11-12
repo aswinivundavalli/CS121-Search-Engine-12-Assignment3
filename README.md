@@ -20,4 +20,3 @@ The goal of this milestone is to create an inverted index using the HTML files f
 
 ## Tasks Remaining
 - Memory issue when loading and merging files(Save for Milestone2)
-- Written Report for the Analytics
