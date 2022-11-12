@@ -13,13 +13,11 @@
 The goal of this milestone is to create an inverted index using the HTML files from the Algorithms and data structures developer zip.
 
 ## Required Analytics
-- Retrieve the total number of indexed documents
-- Get the number of unique tokens
-- Get the total size(in KB) of our index on disk 
+- Retrieve the total number of indexed documents - Completed
+- Get the number of unique tokens - Completed
+- Get the total size(in KB) of our index on disk - Completed
 
 
 ## Tasks Remaining
-- Partial Indexes(When in-memory runs out)
-- Serialization Error when writing index to file
-- Iterate through all directories(Start with a few directories to test core functionality before expanding)
-- Postings need to be sorted by document id
+- Memory issue when loading and merging files(Save for Milestone2)
+- Written Report for the Analytics
