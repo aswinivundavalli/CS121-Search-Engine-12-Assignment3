@@ -1,11 +1,19 @@
+# TODO: load ID/URL mappings dict.  Load json for each term in search.  Merge common IDs for each term, create vector
+#  to compute cosine similarity
 
-# gets all the postings the term is stored at 
+# gets all the postings the term is stored at
 def booleanResults(word_search, inverted_index):
+  # TODO: Cannot load full index all at once.  Need to either built a sub-index of essentially pointers to certain
+  #  words in our index to make searching faster " term “ape” is at position 1311, “apple” is at position 1345, etc."
+  #  and "seeK," or find a library that does something similar/more efficient
+
   postings = list(inverted_index[word_search])
   return postings
 
 
 def getSearchResults(user_query, inverted_index):
+  #TODO: Use stemmer on the words that are searched to match them with index
+
   unique_words = set(user_query.split())
   search_words = set()
   
