@@ -6,6 +6,7 @@ from collections import Counter
 from nltk import stem
 from urllib.parse import urldefrag
 import sys
+from math import log10
 
 STEMMER = stem.PorterStemmer()
 BATCH_SIZE = 3000000  # bytes
@@ -28,7 +29,7 @@ class BuildIndex:
     def buildIndex(self):
         docNumber = 0  # Initial document number
         path = Path(self.webPagesPath)
-        for dir in path.iterdir(): # iterate over all directories and their corresponding files
+        for dir in path.iterdir():  # iterate over all directories and their corresponding files
             for file in dir.iterdir():
                 with open(file) as readFile:
                     fileDict = json.load(readFile)
@@ -64,10 +65,7 @@ class BuildIndex:
             self.writePartialIndexesToFile()
 
     def writeData(self):
-        with open("urlIDMap.txt", 'w') as data:
-            jsonObj = json.dumps(self.urlIDMap)
-            data.write(jsonObj)
-        with open("IDUrlMap.txt", 'w') as data:
+        with open("IDUrlMap.json", 'w') as data:
             jsonObj = json.dumps(self.IDUrlMap)
             data.write(jsonObj)
 
@@ -102,7 +100,8 @@ class BuildIndex:
 
             for i, gen in enumerate(fileGenerators):
                 currGensNext = list(next(gen).items())
-                nextWords.append((currGensNext[0][0], currGensNext[0][1], fileGenerators[i]))  # store k,v pair w/ gen obj
+                nextWords.append(
+                    (currGensNext[0][0], currGensNext[0][1], fileGenerators[i]))  # store k,v pair w/ gen obj
 
             while fileGenerators:  # loop until all generators empty
                 nextWords.sort(key=lambda x: x[0])  # sort yielded words
@@ -118,6 +117,8 @@ class BuildIndex:
                     i += 1
 
                 self.tokensProcessed += 1
+                postings.sort(key=lambda x: x[0])  # sort postings by docid
+                postings = self.calulatetfidf(postings)  # change raw frequency to tf-idf
                 keyValAsJson = json.dumps({nextWords[i - 1][0]: postings})  # write k,v pair into final index
                 final.write(keyValAsJson + "\n")
                 nextWords = nextWords[len(getNextVals):]  # remove written word
@@ -133,6 +134,13 @@ class BuildIndex:
 
             for file in self.partialIndexFiles:  # remove partial indices
                 Path(file).unlink()
+
+    def calulatetfidf(self, postingsList: list):
+        freqToTfidf = list()
+        for posting in postingsList:
+            tfidf = round((1 + log10(posting[1])) * (log10(self.filesProcessed / len(postingsList))), 2)
+            freqToTfidf.append((posting[0], tfidf))
+        return freqToTfidf
 
 
 if __name__ == "__main__":
