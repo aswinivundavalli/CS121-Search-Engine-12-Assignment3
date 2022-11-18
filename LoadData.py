@@ -1,39 +1,31 @@
 import json
 from BTrees.OOBTree import OOBTree
 
-WORDINDEXTREE = OOBTree()
-IDURLMAP = None
+class LoadData:
+    def __init__(self):
+        self.wordIndexTree = OOBTree()
+        with open("IDUrlMap.json", 'r') as URLmap:
+            self.IDUrlMap = json.load(URLmap)
+        self.createWordBTree()
+    
+    def createWordBTree(self) -> None:
+        """stores words and their corresponding place in the main index in a btree """
+        with open("full_index/index.jsonl", "r") as index:
+            offset = 0
+            for line in index:
+                jsonObj = json.loads(line)
+                self.wordIndexTree.insert(list(jsonObj.keys())[0], offset)
+                offset += len(line) + 1
+    
+    def getWordPositionInIndex(self, word: str) -> int:
+        """takes a word as an argument and returns its position in the main index file"""
+
+        return self.wordIndexTree[word] if word in self.wordIndexTree else None  # will probably stem in main before func call
 
 
-def loadIDtoURLmap() -> None:
-    """loads ID to URL mappings"""
-
-    global IDURLMAP
-    with open("IDUrlMap.json", 'r') as URLmap:
-        IDURLMAP = json.load(URLmap)
-
-
-def createWordBTree() -> None:
-    """stores words and their corresponding place in the main index in a btree """
-
-    with open("full_index/index.jsonl", "r") as index:
-        offset = 0
-        for line in index:
-            jsonObj = json.loads(line)
-            WORDINDEXTREE.insert(list(jsonObj.keys())[0], offset)
-            offset += len(line) + 1
-
-
-def getWordPositionInIndex(word: str) -> int:
-    """takes a word as an argument and returns its position in the main index file"""
-
-    return WORDINDEXTREE[word] if word in WORDINDEXTREE else None  # will probably stem in main before func call
-
-
-def getPosting(offset: int, word: str) -> list:
-    """finds word in index using offset, loads json, returns list of postings"""
-
-    with open("full_index/index.jsonl", "r") as index:  # will change this once integrated to keep file open always
-        index.seek(offset)
-        jsonline = json.loads(index.readline())
-        return jsonline[word]
+    def getPosting(self, offset: int, word: str) -> list:
+        """finds word in index using offset, loads json, returns list of postings"""
+        with open("full_index/index.jsonl", "r") as index:  # will change this once integrated to keep file open always
+            index.seek(offset)
+            jsonline = json.loads(index.readline())
+            return jsonline[word]
