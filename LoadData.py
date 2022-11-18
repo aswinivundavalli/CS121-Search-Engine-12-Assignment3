@@ -20,7 +20,7 @@ class LoadData:
     def getWordPositionInIndex(self, word: str) -> int:
         """takes a word as an argument and returns its position in the main index file"""
 
-        return self.wordIndexTree[word] if word in self.wordIndexTree else None  # will probably stem in main before func call
+        return self.wordIndexTree[word] if word in self.wordIndexTree else None
 
 
     def getPosting(self, offset: int, word: str) -> list:
