@@ -26,7 +26,7 @@ class SearchEngine:
                     # find intersected documents - only for boolean search
                     docs = set([item[0] for item in postings])
                     documentsSet = documentsSet.intersection(docs)
-        return documentsSet
+        return [self.loadData.IDUrlMap[str(doc)] for doc in documentsSet]
 
     def printTop5Results(self, results):
       i = 0
@@ -37,8 +37,8 @@ class SearchEngine:
 
 
 def main():
-    user_query = input("Enter a query: ").strip()
     searchEngine = SearchEngine()
+    user_query = input("Enter a query: ").strip()
     while user_query != "":
         results = searchEngine.booleanSeach(user_query)
         searchEngine.printTop5Results(results)
