@@ -29,3 +29,7 @@ class LoadData:
             index.seek(offset)
             jsonline = json.loads(index.readline())
             return jsonline[word]
+    
+    def getDocumentURL(self, docID: int) -> str:
+        """get the URL of the document ID"""
+        return self.IDUrlMap[docID]

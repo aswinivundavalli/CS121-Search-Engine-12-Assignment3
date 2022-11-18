@@ -28,12 +28,20 @@ class SearchEngine:
                     documentsSet = documentsSet.intersection(docs)
         return documentsSet
 
+    def printTop5Results(self, results):
+      i = 0
+      for docID in results:
+        print(self.loadData.IDUrlMap[str(docID)])
+        i += 1
+        if i == 5: break
+
+
 def main():
     user_query = input("Enter a query: ").strip()
     searchEngine = SearchEngine()
     while user_query != "":
         results = searchEngine.booleanSeach(user_query)
-        print(results)
+        searchEngine.printTop5Results(results)
         user_query = input("Enter a query: ").strip()
 
 if __name__ == "__main__":
