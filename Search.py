@@ -86,10 +86,9 @@ class SearchEngine:
 
         tStart = process_time()
         cosineSimHeap = heap()  # store cosine similarity vectors in a heap
-        maxZeros = (vectorLen + 2) // 2  # set value for max allowable non-matches
-        # maxZeros = int(ceil(vectorLen*.7))  # set value for max allowable non-matches -- somehow really slow
+        maxZeros = vectorLen - int(ceil(vectorLen*.7))  # set value for max allowable non-matches -- not slow I'm dumb
         for docID, docVector in docVectors.items():  # compute cosine similarity, insert vector object into heap
-            if docVector.count(0) < maxZeros:
+            if docVector.count(0) <= maxZeros:
                 cosineSimHeap.insert(DocRelevance(docID, dot(queryVector, docVector) /
                                                   (norm(queryVector) * norm(docVector))))
         tStop = process_time()
