@@ -7,6 +7,8 @@ from nltk import stem
 from urllib.parse import urldefrag
 import sys
 from math import log10
+from simHash import SimHash
+
 
 STEMMER = stem.PorterStemmer()
 BATCH_SIZE = 3000000  # bytes
@@ -14,6 +16,7 @@ PATH = "DEV/"
 PARTIALINDEXPATH = "partialIndices/partialIndex_"
 FULLINDEXPATH = "full_Index/index.jsonl"
 IMPORTANT_TAGS = ["h1", "h2", "h3", "h4", "strong", "b"]
+fingerPrints = list()
 
 
 class BuildIndex:
@@ -57,6 +60,9 @@ class BuildIndex:
                         tokens = [STEMMER.stem(word) for word in
                                   re.sub(r"[^a-zA-Z0-9\s]", "", line.text.lower()).split()]
                         token_frequency.update(tokens)
+
+                    if self.check_near_duplicaton(token_frequency): continue
+
                     for token, frequency in token_frequency.items():
                         if token not in self.invertedIndex:
                             self.invertedIndex[token] = []
@@ -152,6 +158,16 @@ class BuildIndex:
             tfidf = round((1 + log10(posting[1])) * (log10(self.filesProcessed / len(postingsList))), 2)
             freqToTfidf.append((posting[0], tfidf))
         return freqToTfidf
+
+    def check_near_duplicaton(self, word_frequencies):
+        global fingerPrints
+        sh = SimHash(word_frequencies)
+        for fp in fingerPrints:
+            score = sh.distance(fp)
+            if score <= 10:
+                return True
+        fingerPrints.append(sh.finger_print)
+        return False
 
 
 if __name__ == "__main__":
