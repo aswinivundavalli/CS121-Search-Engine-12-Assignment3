@@ -13,6 +13,7 @@ BATCH_SIZE = 3000000  # bytes
 PATH = "DEV/"
 PARTIALINDEXPATH = "partialIndices/partialIndex_"
 FULLINDEXPATH = "full_Index/index.jsonl"
+IMPORTANT_TAGS = ["h1", "h2", "h3", "h4", "strong", "b"]
 
 
 class BuildIndex:
@@ -42,6 +43,12 @@ class BuildIndex:
 
                     rawContent = fileDict["content"]
                     content = BeautifulSoup(rawContent, features="html.parser")
+
+                    importantWords = set()
+                    for tags in content.find_all(IMPORTANT_TAGS):
+                        for word in re.sub(r"[^a-zA-Z0-9\s]", "", tags.text.lower()).split():
+                            importantWords.add(STEMMER.stem(word))
+                    
                     content = content.find_all()
                     token_frequency = Counter()
                     for line in content:
@@ -52,8 +59,12 @@ class BuildIndex:
                         token_frequency.update(tokens)
                     for token, frequency in token_frequency.items():
                         if token not in self.invertedIndex:
-                            self.invertedIndex[token] = [(docNumber, frequency)]
-                        else:
+                            self.invertedIndex[token] = []
+                        
+                        if token in importantWords: 
+                            # Increase the tf-idf score for important words
+                            self.invertedIndex[token].append((docNumber, frequency * 100))
+                        else: 
                             self.invertedIndex[token].append((docNumber, frequency))
                 self.filesProcessed += 1
 
